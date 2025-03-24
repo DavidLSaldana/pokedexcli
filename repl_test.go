@@ -13,6 +13,18 @@ func TestCleanInput(t *testing.T) {
 			input:    "  hello  world  ",
 			expected: []string{"hello", "world"},
 		},
+		{
+			input:    "hello    world  ",
+			expected: []string{"hello", "world"},
+		},
+		{
+			input:    "   hello  world ",
+			expected: []string{"hello", "world"},
+		},
+		{
+			input:    "hello world",
+			expected: []string{"hello", "world"},
+		},
 		//add more cases
 	}
 
@@ -26,6 +38,9 @@ func TestCleanInput(t *testing.T) {
 		for i := range actual {
 			word := actual[i]
 			expectedWord := c.expected[i]
+			if word != expectedWord {
+				t.Errorf("word: %s doesn't match expected word %s", word, expectedWord)
+			}
 
 		}
 	}
