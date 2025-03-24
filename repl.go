@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+type config struct {
+	nextURL string
+	prevURL string
+}
+
 type cliCommand struct {
 	name        string
 	description string
@@ -31,6 +36,11 @@ func commandHelp() error {
 }
 
 func commandMap() error {
+
+	return nil
+}
+
+func commandMapB() error {
 	return nil
 }
 
@@ -44,6 +54,11 @@ func getCommandList() map[string]cliCommand {
 		"map": {
 			name:        "map",
 			description: "Displays next 20 location areas",
+			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Displays previous 20 location areas",
 			callback:    commandMap,
 		},
 		"exit": {
