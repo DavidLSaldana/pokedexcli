@@ -2,20 +2,48 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"net/http"
 )
 
 var apiURL string = "https://pokeapi.co/api/v2/"
 
 type locationArea struct {
-	count    int    `json:"count"`
-	next     string `json:"next"`
-	previous string `json:"previous"`
-	results  []struct {
-		name string `json:"name"`
+	Count    int    `json:"count"`
+	Next     string `json:"next"`
+	Previous string `json:"previous"`
+	Results  []struct {
+		Name string `json:"name"`
 		URL  string `json:"url"`
 	} `json:"results"`
 }
 
-func getLocationArea() {
+func GetLocationAreaData(url string) ( /*need to edit*/ []string, error) {
+	//IN PROGRESS
+	if url == "" {
+		url = apiURL + "location-area"
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, errors.New("Error on NewRequest")
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, errors.New("Error on DoRequest")
+	}
+	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+
+	locationAreaData := &locationArea{}
+	err = decoder.Decode(locationAreaData)
+	if err != nil {
+		return nil, errors.New("Error with decoder")
+	}
+
+	return locationAreaData.Next, locationAreaData.Previous, locationAreaData.Results, nil
 
 }

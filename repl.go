@@ -37,6 +37,9 @@ func commandHelp(cfg *config) error {
 
 func commandMap(cfg *config) error {
 	//get location-area endpoint and print
+	//url logic should happen here
+
+	//I should be able to get next, prev, and []results by calling the helper function
 
 	return nil
 }
