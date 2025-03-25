@@ -16,16 +16,16 @@ type config struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
-func commandExit() error {
+func commandExit(cfg *config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp() error {
+func commandHelp(cfg *config) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Print("Usage:\n\n")
 	commandList := getCommandList()
@@ -35,12 +35,13 @@ func commandHelp() error {
 	return nil
 }
 
-func commandMap() error {
+func commandMap(cfg *config) error {
+	//get location-area endpoint and print
 
 	return nil
 }
 
-func commandMapB() error {
+func commandMapB(cfg *config) error {
 	return nil
 }
 
@@ -73,6 +74,7 @@ func getCommandList() map[string]cliCommand {
 
 func repl() {
 	scanner := bufio.NewScanner(os.Stdin)
+	cfg := &config{}
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
@@ -83,7 +85,7 @@ func repl() {
 			continue
 
 		}
-		err := command.callback()
+		err := command.callback(cfg)
 		if err != nil {
 			fmt.Printf("Error: %v", err)
 		}
