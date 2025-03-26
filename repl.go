@@ -2,10 +2,12 @@ package main
 
 import (
 	"bufio"
-	//"errors"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/DavidLSaldana/pokedexcli/internal/api"
 )
 
 type config struct {
@@ -36,15 +38,41 @@ func commandHelp(cfg *config) error {
 }
 
 func commandMap(cfg *config) error {
-	//get location-area endpoint and print
 	//url logic should happen here
 
-	//I should be able to get next, prev, and []results by calling the helper function
+	locationArea, err := api.GetLocationAreaData(cfg.nextURL)
+	if err != nil {
+		return err
+	}
+
+	cfg.nextURL = locationArea.Next
+	cfg.prevURL = locationArea.Previous
+
+	for _, location := range locationArea.Results {
+		println(location.Name)
+	}
 
 	return nil
 }
 
 func commandMapB(cfg *config) error {
+
+	if cfg.prevURL == "" {
+		return errors.New("you're on the first page")
+	}
+
+	locationArea, err := api.GetLocationAreaData(cfg.prevURL)
+	if err != nil {
+		return err
+	}
+
+	cfg.nextURL = locationArea.Next
+	cfg.prevURL = locationArea.Previous
+
+	for _, location := range locationArea.Results {
+		println(location.Name)
+	}
+
 	return nil
 }
 
@@ -63,7 +91,7 @@ func getCommandList() map[string]cliCommand {
 		"mapb": {
 			name:        "mapb",
 			description: "Displays previous 20 location areas",
-			callback:    commandMap,
+			callback:    commandMapB,
 		},
 		"exit": {
 			name:        "exit",
@@ -78,6 +106,8 @@ func getCommandList() map[string]cliCommand {
 func repl() {
 	scanner := bufio.NewScanner(os.Stdin)
 	cfg := &config{}
+	cfg.nextURL = ""
+	cfg.prevURL = ""
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
@@ -90,7 +120,7 @@ func repl() {
 		}
 		err := command.callback(cfg)
 		if err != nil {
-			fmt.Printf("Error: %v", err)
+			fmt.Printf("Error: %v\n", err)
 		}
 	}
 

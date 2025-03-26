@@ -18,32 +18,31 @@ type locationArea struct {
 	} `json:"results"`
 }
 
-func GetLocationAreaData(url string) ( /*need to edit*/ []string, error) {
-	//IN PROGRESS
+func GetLocationAreaData(url string) (locationArea, error) {
+	locationAreaData := &locationArea{}
 	if url == "" {
 		url = apiURL + "location-area"
 	}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, errors.New("Error on NewRequest")
+		return *locationAreaData, errors.New("Error on NewRequest")
 	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, errors.New("Error on DoRequest")
+		return *locationAreaData, errors.New("Error on DoRequest")
 	}
 	defer resp.Body.Close()
 
 	decoder := json.NewDecoder(resp.Body)
 
-	locationAreaData := &locationArea{}
 	err = decoder.Decode(locationAreaData)
 	if err != nil {
-		return nil, errors.New("Error with decoder")
+		return *locationAreaData, errors.New("Error with decoder")
 	}
 
-	return locationAreaData.Next, locationAreaData.Previous, locationAreaData.Results, nil
+	return *locationAreaData, nil
 
 }
