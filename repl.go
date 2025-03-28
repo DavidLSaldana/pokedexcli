@@ -6,13 +6,16 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/DavidLSaldana/pokedexcli/internal/api"
+	"github.com/DavidLSaldana/pokedexcli/internal/pokecache"
 )
 
 type config struct {
 	nextURL string
 	prevURL string
+	cache   pokecache.Cache
 }
 
 type cliCommand struct {
@@ -38,9 +41,8 @@ func commandHelp(cfg *config) error {
 }
 
 func commandMap(cfg *config) error {
-	//url logic should happen here
 
-	locationArea, err := api.GetLocationAreaData(cfg.nextURL)
+	locationArea, err := api.GetLocationAreaData(cfg.nextURL, cfg.cache)
 	if err != nil {
 		return err
 	}
@@ -61,7 +63,7 @@ func commandMapB(cfg *config) error {
 		return errors.New("you're on the first page")
 	}
 
-	locationArea, err := api.GetLocationAreaData(cfg.prevURL)
+	locationArea, err := api.GetLocationAreaData(cfg.prevURL, cfg.cache)
 	if err != nil {
 		return err
 	}
@@ -108,6 +110,7 @@ func repl() {
 	cfg := &config{}
 	cfg.nextURL = ""
 	cfg.prevURL = ""
+	cfg.cache = pokecache.NewCache(5 * time.Second)
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()

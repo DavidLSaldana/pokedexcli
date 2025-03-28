@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"github.com/DavidLSaldana/pokedexcli/internal/pokecache"
 	"net/http"
 )
 
@@ -18,10 +19,20 @@ type locationArea struct {
 	} `json:"results"`
 }
 
-func GetLocationAreaData(url string) (locationArea, error) {
+func GetLocationAreaData(url string, cache pokecache.Cache) (locationArea, error) {
 	locationAreaData := &locationArea{}
 	if url == "" {
 		url = apiURL + "location-area"
+	} else {
+		stored, ok := cache.Get(url)
+		if ok {
+			err := json.Unmarshal(stored, locationAreaData)
+			if err != nil {
+				return *locationAreaData, errors.New("Error on Unmarshaling from cache")
+			}
+			return *locationAreaData, nil
+
+		}
 	}
 
 	req, err := http.NewRequest("GET", url, nil)
