@@ -78,6 +78,13 @@ func commandMapB(cfg *config) error {
 	return nil
 }
 
+func commandExplore(cfg *config) error {
+
+	//in progress
+	return nil
+
+}
+
 func getCommandList() map[string]cliCommand {
 	var commandList = map[string]cliCommand{
 		"help": {
