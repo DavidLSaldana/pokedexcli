@@ -46,11 +46,11 @@ func GetLocationAreaData(url string, cache pokecache.Cache) (locationArea, error
 	if url == "" {
 		url = apiURL + "location-area"
 	} else {
-		stored, ok := cache.Get(url)
+		storedData, ok := cache.Get(url)
 		if ok {
-			err := json.Unmarshal(stored, locationAreaData)
+			err := json.Unmarshal(storedData, locationAreaData)
 			if err != nil {
-				return *locationAreaData, errors.New("Error on Unmarshaling from cache")
+				return *locationAreaData, errors.New("Error on Unmarshalling location area data from cache")
 			}
 			return *locationAreaData, nil
 
@@ -79,10 +79,19 @@ func GetLocationAreaData(url string, cache pokecache.Cache) (locationArea, error
 	return *locationAreaData, nil
 }
 
-func GetExploreAreaData(area string) (exploreArea, error) {
+func GetExploreAreaData(area string, cache pokecache.Cache) (exploreArea, error) {
 	exploreAreaData := &exploreArea{}
 
 	url := apiURL + "location-area/" + area
+
+	if storedData, ok := cache.Get(url); ok {
+		err := json.Unmarshal(storedData, exploreAreaData)
+		if err != nil {
+			return *exploreAreaData, errors.New("Error on unmarshalling explore area data from cache")
+		}
+		return *exploreAreaData, nil
+
+	}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

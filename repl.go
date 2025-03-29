@@ -85,7 +85,7 @@ func commandExplore(cfg *config, args []string) error {
 		return errors.New("too many args for explore command")
 	}
 	exploreLocation := args[1]
-	exploreData, err := api.GetExploreAreaData(exploreLocation)
+	exploreData, err := api.GetExploreAreaData(exploreLocation, cfg.cache)
 	if err != nil {
 		return err
 	}
