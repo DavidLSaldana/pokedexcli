@@ -21,16 +21,16 @@ type config struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, []string) error
 }
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, args []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *config, args []string) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Print("Usage:\n\n")
 	commandList := getCommandList()
@@ -40,7 +40,7 @@ func commandHelp(cfg *config) error {
 	return nil
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, args []string) error {
 
 	locationArea, err := api.GetLocationAreaData(cfg.nextURL, cfg.cache)
 	if err != nil {
@@ -57,7 +57,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapB(cfg *config) error {
+func commandMapB(cfg *config, args []string) error {
 
 	if cfg.prevURL == "" {
 		return errors.New("you're on the first page")
@@ -78,9 +78,23 @@ func commandMapB(cfg *config) error {
 	return nil
 }
 
-func commandExplore(cfg *config) error {
+func commandExplore(cfg *config, args []string) error {
 
 	//in progress
+	if len(args) > 2 {
+		return errors.New("too many args for explore command")
+	}
+	exploreLocation := args[1]
+	exploreData, err := api.GetExploreAreaData(exploreLocation)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Exploring %s...\n", exploreLocation)
+	fmt.Printf("Found Pokemon:\n")
+	for _, encounters := range exploreData.PokemonEncounters {
+		fmt.Printf(" - %s\n", encounters.Pokemon.Name)
+	}
+
 	return nil
 
 }
@@ -101,6 +115,11 @@ func getCommandList() map[string]cliCommand {
 			name:        "mapb",
 			description: "Displays previous 20 location areas",
 			callback:    commandMapB,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Displays list of all the pokemon at a location",
+			callback:    commandExplore,
 		},
 		"exit": {
 			name:        "exit",
@@ -128,7 +147,7 @@ func repl() {
 			continue
 
 		}
-		err := command.callback(cfg)
+		err := command.callback(cfg, input)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}
