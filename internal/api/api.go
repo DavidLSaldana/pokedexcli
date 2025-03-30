@@ -41,6 +41,65 @@ type exploreArea struct {
 	} `json:"pokemon_encounters"`
 }
 
+type pokemon struct {
+	BaseExperience int `json:"base_experience"`
+	Forms          []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"forms"`
+	GameIndices []struct {
+		GameIndex int `json:"game_index"`
+		Version   struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"version"`
+	} `json:"game_indices"`
+	Height                 int    `json:"height"`
+	ID                     int    `json:"id"`
+	IsDefault              bool   `json:"is_default"`
+	LocationAreaEncounters string `json:"location_area_encounters"`
+	Moves                  []struct {
+		Move struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"move"`
+		VersionGroupDetails []struct {
+			LevelLearnedAt  int `json:"level_learned_at"`
+			MoveLearnMethod struct {
+				Name string `json:"name"`
+				URL  string `json:"url"`
+			} `json:"move_learn_method"`
+			Order        any `json:"order"`
+			VersionGroup struct {
+				Name string `json:"name"`
+				URL  string `json:"url"`
+			} `json:"version_group"`
+		} `json:"version_group_details"`
+	} `json:"moves"`
+	Name    string `json:"name"`
+	Order   int    `json:"order"`
+	Species struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"species"`
+	Stats []struct {
+		BaseStat int `json:"base_stat"`
+		Effort   int `json:"effort"`
+		Stat     struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"stat"`
+	} `json:"stats"`
+	Types []struct {
+		Slot int `json:"slot"`
+		Type struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"type"`
+	} `json:"types"`
+	Weight int `json:"weight"`
+}
+
 func GetLocationAreaData(url string, cache pokecache.Cache) (locationArea, error) {
 	locationAreaData := &locationArea{}
 	if url == "" {
@@ -113,5 +172,42 @@ func GetExploreAreaData(area string, cache pokecache.Cache) (exploreArea, error)
 	}
 
 	return *exploreAreaData, nil
+
+}
+
+func GetPokemonData(pokemonName string, cache pokecache.Cache) (pokemon, error) {
+	pokemonData := &pokemon{}
+
+	url := apiURL + "Pokemon/" + pokemonName
+
+	if storedData, ok := cache.Get(url); ok {
+		err := json.Unmarshal(storedData, pokemonData)
+		if err != nil {
+			return *pokemonData, errors.New("Error on unmarshalling explore area data from cache")
+		}
+		return *pokemonData, nil
+
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return *pokemonData, errors.New("Error on New Request")
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return *pokemonData, errors.New("Error on Do Request")
+	}
+	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+
+	err = decoder.Decode(pokemonData)
+	if err != nil {
+		return *pokemonData, errors.New("Error with decoder")
+	}
+
+	return *pokemonData, nil
 
 }

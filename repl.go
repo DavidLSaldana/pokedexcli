@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -79,8 +80,6 @@ func commandMapB(cfg *config, args []string) error {
 }
 
 func commandExplore(cfg *config, args []string) error {
-
-	//in progress
 	if len(args) > 2 {
 		return errors.New("too many args for explore command")
 	}
@@ -97,6 +96,26 @@ func commandExplore(cfg *config, args []string) error {
 
 	return nil
 
+}
+
+func commandCatch(cfg *config, args []string) error {
+	if len(args) > 2 {
+		return errors.New("too many args for catch command")
+	}
+	pokemonName := args[1]
+	pokemonData, err := api.GetPokemonData(pokemonName, cfg.cache)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemonName)
+	isCaught := catchAttempt(pokemonData.BaseExperience)
+	if !isCaught {
+		fmt.Printf("%s escaped!\n", pokemonName)
+		return nil
+	}
+	fmt.Printf("%s was caught!\n", pokemonName)
+
+	return nil
 }
 
 func getCommandList() map[string]cliCommand {
@@ -120,6 +139,11 @@ func getCommandList() map[string]cliCommand {
 			name:        "explore",
 			description: "Displays list of all the pokemon at a location",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Attempts to catch a pokemone",
+			callback:    commandCatch,
 		},
 		"exit": {
 			name:        "exit",
@@ -159,4 +183,13 @@ func cleanInput(text string) []string {
 	strSlice := strings.Fields(text)
 
 	return strSlice
+}
+
+func catchAttempt(baseExp int) bool {
+	catchRate := rand.Intn(10) * baseExp
+	if float64(catchRate) > 7/10 {
+		return true
+	}
+	return false
+
 }
