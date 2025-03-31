@@ -41,7 +41,7 @@ type exploreArea struct {
 	} `json:"pokemon_encounters"`
 }
 
-type pokemon struct {
+type Pokemon struct {
 	BaseExperience int `json:"base_experience"`
 	Forms          []struct {
 		Name string `json:"name"`
@@ -175,8 +175,8 @@ func GetExploreAreaData(area string, cache pokecache.Cache) (exploreArea, error)
 
 }
 
-func GetPokemonData(pokemonName string, cache pokecache.Cache) (pokemon, error) {
-	pokemonData := &pokemon{}
+func GetPokemonData(pokemonName string, cache pokecache.Cache) (Pokemon, error) {
+	pokemonData := &Pokemon{}
 
 	url := apiURL + "Pokemon/" + pokemonName
 

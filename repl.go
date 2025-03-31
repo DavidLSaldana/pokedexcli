@@ -17,6 +17,7 @@ type config struct {
 	nextURL string
 	prevURL string
 	cache   pokecache.Cache
+	pokedex map[string]api.Pokemon
 }
 
 type cliCommand struct {
@@ -114,8 +115,56 @@ func commandCatch(cfg *config, args []string) error {
 		return nil
 	}
 	fmt.Printf("%s was caught!\n", pokemonName)
+	if _, ok := cfg.pokedex[pokemonName]; ok {
+		fmt.Printf("%s has already been caught...letting %s go..\n", pokemonName, pokemonName)
+		return nil
+	}
+	cfg.pokedex[pokemonName] = pokemonData
 
 	return nil
+}
+
+func commandInspect(cfg *config, args []string) error {
+	if len(args) < 2 {
+		return errors.New("not enough args for inspect command")
+	}
+	if len(args) > 2 {
+		return errors.New("too many args for inspect command")
+	}
+	if len(args) == 2 {
+		pokemon, ok := cfg.pokedex[args[1]]
+		if !ok {
+			return errors.New("that pokemon hasn't been caught yet")
+		}
+		fmt.Printf("Height: %d\n", pokemon.Height)
+		fmt.Printf("Weight: %d\n", pokemon.Weight)
+		fmt.Println("Stats:")
+		for _, stat := range pokemon.Stats {
+			fmt.Printf(" -%s: %d\n", stat.Stat.Name, stat.BaseStat)
+		}
+		fmt.Println("Types")
+		for _, types := range pokemon.Types {
+			fmt.Printf(" - %s\n", types.Type.Name)
+		}
+	}
+
+	return nil
+
+}
+
+func commandPokedex(cfg *config, args []string) error {
+	if len(args) > 1 {
+		return errors.New("too many args for pokedex command")
+	}
+	if len(cfg.pokedex) == 0 {
+		return errors.New("you haven't captured any pokemon yet")
+	}
+	fmt.Println("List of pokemon...")
+	for _, pokemon := range cfg.pokedex {
+		fmt.Printf(" - %s\n", pokemon.Name)
+	}
+	return nil
+
 }
 
 func getCommandList() map[string]cliCommand {
@@ -142,8 +191,18 @@ func getCommandList() map[string]cliCommand {
 		},
 		"catch": {
 			name:        "catch",
-			description: "Attempts to catch a pokemone",
+			description: "Attempts to catch a pokemon",
 			callback:    commandCatch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "view information on already captured pokemon",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "lists the pokemon you have captured",
+			callback:    commandPokedex,
 		},
 		"exit": {
 			name:        "exit",
@@ -161,6 +220,7 @@ func repl() {
 	cfg.nextURL = ""
 	cfg.prevURL = ""
 	cfg.cache = pokecache.NewCache(5 * time.Second)
+	cfg.pokedex = make(map[string]api.Pokemon)
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
@@ -186,10 +246,10 @@ func cleanInput(text string) []string {
 }
 
 func catchAttempt(baseExp int) bool {
-	catchRate := rand.Intn(10) * baseExp
-	if float64(catchRate) > 7/10 {
-		return true
-	}
-	return false
+
+	testRand := rand.Float64()
+	catchRate := ((testRand) * float64(baseExp))
+
+	return float64(100)/float64(catchRate) > float64(0.5)
 
 }
